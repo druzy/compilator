@@ -142,7 +142,7 @@ module Compilator
       
       @button_c = Tk::Tile::Button.new(@window)
       @button_c['text'] = 'C'
-      Tk::Tile::Style.configure('Lime.TButton', {"foreground" => 'lime'  })
+      Tk::Tile::Style.configure('Lime.TButton', {"foreground" => 'lime green'  })
       @button_c['style'] = 'Lime.TButton'
       @button_c.bind('ButtonPress') do
         Thread.new do
