@@ -1,7 +1,8 @@
 require_relative 'compilator/version'
 
 require 'druzy/mvc'
-require 'gtk3'
+require 'tk'
+require 'tkextlib/tile'
 
 module Compilator
   
@@ -75,144 +76,167 @@ module Compilator
   
     def initialize(controller)
       super(controller)
+      #Tk::Tile::Style.theme_use "classic"
       
-      @window = Gtk::Window.new
-      @window.title = 'COMPILATOR'
-      @window.signal_connect('key_press_event') do |widget, event|
-        val = Gdk::Keyval.name(Gdk::Keyval.to_lower(event.keyval))
+      @root = TkRoot.new
+      @root.title = 'Compilator'
+      @root.bind('Key') do |event|
+        val = event.valid_fields['keysym'].downcase
         
-        if controller.model.score.has_key?(val)
+        if val == 'return'
           Thread.new do
-            controller.notify_action(self,:key_pressed, :key => val)
+            @controller.notify_action(self, :key_enter_pressed, :value => @entry_variable.value)
           end
-          
-        elsif event.keyval == Gdk::Keyval::KEY_Return
+        elsif @controller.model.score.has_key?(val)
           Thread.new do
-            controller.notify_action(self, :key_enter_pressed, :value => @entry.text)
-          end
+            @controller.notify_action(self,:key_pressed, :key => val)
+          end  
+        end
+        
+      end
+      
+      @window = Tk::Tile::Frame.new(@root)
+      
+      @entry_variable = TkVariable.new
+      @entry = Tk::Tile::Entry.new(@window)
+      @entry.justify = 'right'
+      @entry.validate = 'key'
+      @entry.textvariable = @entry_variable 
+      @entry.validatecommand do |valid|
+        if valid.action == 1
+         false
+       else
+         true
+       end          
+      end
+      
+      @button_r = Tk::Tile::Button.new(@window)
+      @button_r['text'] = 'R'
+      Tk::Tile::Style.configure('Red.TButton', {"foreground" => 'red'  })
+      @button_r['style'] = 'Red.TButton'
+      @button_r.bind('ButtonPress') do
+        Thread.new do
+          @controller.notify_action(self,:button_pressed, :key => 'r')
         end
       end
-      @window.signal_connect('delete-event') do 
+            
+      @button_o = Tk::Tile::Button.new(@window)
+      @button_o['text'] = 'O'
+      Tk::Tile::Style.configure('Orange.TButton', {"foreground" => 'orange'  })
+      @button_o['style'] = 'Orange.TButton'
+      @button_o.bind('ButtonPress') do
         Thread.new do
-          controller.notify_action(self,:close_window)
+          @controller.notify_action(self,:button_pressed, :key => 'o')
         end
       end
       
-      @entry = Gtk::Entry.new
-      @entry.editable = false
-      @entry.xalign = 1
-      
-      @button_r = Gtk::Button.new
-      @button_r.add(Gtk::Label.new.set_markup('<span size="xx-large" foreground="red">R</span>'))
-      @button_r.signal_connect("clicked") do
+      @button_j = Tk::Tile::Button.new(@window)
+      @button_j['text'] = 'J'
+      Tk::Tile::Style.configure('Yellow.TButton', {"foreground" => 'yellow'  })
+      @button_j['style'] = 'Yellow.TButton'
+      @button_j.bind('ButtonPress') do
         Thread.new do
-          controller.notify_action(self,:button_pressed, :key => 'r')
-        end
-      end
-
-      @button_o = Gtk::Button.new
-      @button_o.add(Gtk::Label.new.set_markup('<span size="xx-large" foreground="orange">O</span>'))
-      @button_o.signal_connect("clicked") do
-        Thread.new do
-          controller.notify_action(self,:button_pressed, :key => 'o')
-        end
-      end
-
-      @button_j = Gtk::Button.new
-      @button_j.add(Gtk::Label.new.set_markup('<span size="xx-large" foreground="yellow">J</span>'))
-      @button_j.signal_connect("clicked") do
-        Thread.new do
-          controller.notify_action(self,:button_pressed, :key => 'j')
-        end
-      end
-
-      @button_c = Gtk::Button.new
-      @button_c.add(Gtk::Label.new.set_markup('<span size="xx-large" foreground="lime">C</span>'))
-      @button_c.signal_connect("clicked") do
-        Thread.new do
-          controller.notify_action(self,:button_pressed, :key => 'c')
-        end
-      end
-
-      @button_v = Gtk::Button.new
-      @button_v.add(Gtk::Label.new.set_markup('<span size="xx-large" foreground="green">V</span>'))
-      @button_v.signal_connect("clicked") do
-        Thread.new do
-          controller.notify_action(self,:button_pressed, :key => 'v')
-        end
-      end
-
-      @button_e = Gtk::Button.new
-      @button_e.add(Gtk::Label.new.set_markup('<span underline="single" size="xx-large" foreground="green">E</span>'))
-      @button_e.signal_connect("clicked") do
-        Thread.new do
-          controller.notify_action(self,:button_pressed, :key => 'e')
-        end
-      end
-
-      @button_equal = Gtk::Button.new(:label => '=')
-      @button_equal.signal_connect("clicked") do
-        Thread.new do
-          controller.notify_action(self,:button_equal_pressed, :value => @entry.text)
+          @controller.notify_action(self,:button_pressed, :key => 'j')
         end
       end
       
-      @button_raz = Gtk::Button.new(:label => "RàZ")
-      @button_raz.signal_connect("clicked") do
+      @button_c = Tk::Tile::Button.new(@window)
+      @button_c['text'] = 'C'
+      Tk::Tile::Style.configure('Lime.TButton', {"foreground" => 'lime'  })
+      @button_c['style'] = 'Lime.TButton'
+      @button_c.bind('ButtonPress') do
         Thread.new do
-          controller.notify_action(self,:button_raz_pressed)
+          @controller.notify_action(self,:button_pressed, :key => 'c')
         end
       end
       
-      @label_result = Gtk::Label.new("0")
-      @label_result.xalign = 1
+      @button_v = Tk::Tile::Button.new(@window)
+      @button_v['text'] = 'V'
+      Tk::Tile::Style.configure('Green.TButton', {"foreground" => 'green'  })
+      @button_v['style'] = 'Green.TButton'
+      @button_v.bind('ButtonPress') do
+        Thread.new do
+          @controller.notify_action(self,:button_pressed, :key => 'v')
+        end
+      end
       
-      #container
-      @onglet = Gtk::Notebook.new
-       
-      @main_vbox = Gtk::Box.new(:vertical, 0)
+      @button_e = Tk::Tile::Button.new(@window)
+      @button_e['text'] = 'E'
+      @button_e['underline'] = 0
+      Tk::Tile::Style.configure('Underline.TButton', {"foreground" => 'green'})
+      @button_e['style'] = 'Underline.TButton'
+      @button_e.bind('ButtonPress') do
+        Thread.new do
+          @controller.notify_action(self,:button_pressed, :key => 'e')
+        end
+      end
       
-      @grid_button = Gtk::Grid.new
-      @grid_button.set_property("row_homogeneous",true)
-      @grid_button.set_property("column-homogeneous", true)
+      @button_raz = Tk::Tile::Button.new(@window)
+      @button_raz['text'] = 'RàZ'
+      @button_raz.bind('ButtonPress') do
+        Thread.new do
+          @controller.notify_action(self,:button_raz_pressed)
+        end
+      end
+      
+      @button_equal = Tk::Tile::Button.new(@window)
+      @button_equal['text'] = '='
+      @button_equal.bind('ButtonPress') do
+        Thread.new do
+          @controller.notify_action(self,:button_equal_pressed, :value => @entry_variable.value)
+        end
+      end
+      
+      @label_result = Tk::Tile::Label.new(@window)
+      @label_result.justify('right')
       
       #ajout
-      @onglet.append_page(@main_vbox, Gtk::Label.new("Calculatrice"))
+      TkGrid.columnconfigure( @root, 0, :weight => 1 )
+      TkGrid.rowconfigure( @root, 0, :weight => 1 )
       
-      @window.add(@onglet)
+      TkGrid.columnconfigure( @window, 0, :weight => 1)
+      TkGrid.columnconfigure( @window, 1, :weight => 1 )
+      TkGrid.columnconfigure( @window, 2, :weight => 1 )
+      TkGrid.rowconfigure( @window, 0, :weight => 0)
+      TkGrid.rowconfigure( @window, 1, :weight => 1)
+      TkGrid.rowconfigure( @window, 2, :weight => 1)
+      TkGrid.rowconfigure( @window, 3, :weight => 1)
+      TkGrid.rowconfigure( @window, 4, :weight => 0)
       
-      @main_vbox.pack_start(@entry, :expand => false)
-      @main_vbox.pack_start(@grid_button,:expand => true, :fill => true, :padding => 10)
-      @main_vbox.pack_start(@label_result, :expand => false, :padding => 10)
+      @window.grid(:column => 0, :row => 0, :sticky => 'nsew')
       
-      @grid_button.attach(@button_r,0,0,1,1,)
-      @grid_button.attach(@button_o,1,0,1,1)
-      @grid_button.attach(@button_j,2,0,1,1)
-      @grid_button.attach(@button_c,0,1,1,1)
-      @grid_button.attach(@button_v,1,1,1,1)
-      @grid_button.attach(@button_e,2,1,1,1)
-      @grid_button.attach(@button_raz,0,2,1,1)
-      @grid_button.attach(@button_equal,1,2,2,1)
+      @entry.grid(:column => 0, :row => 0, :columnspan => 3, :sticky => 'new')
+      
+
+      @button_r.grid(:column => 0, :row => 1, :sticky => 'nsew')
+      @button_o.grid(:column => 1, :row => 1, :sticky => 'nsew')
+      @button_j.grid(:column => 2, :row => 1, :sticky => 'ewns')
+      @button_c.grid(:column => 0, :row => 2, :sticky => 'ewns')
+      @button_v.grid(:column => 1, :row => 2, :sticky => 'ewns')
+      @button_e.grid(:column => 2, :row => 2, :sticky => 'ewns')
+      @button_raz.grid(:column => 0, :row => 3, :sticky => 'ewns')
+      @button_equal.grid(:column => 1, :row => 3, :columnspan => 2, :sticky => 'ewns')
+      
+      @label_result.grid(:column => 0, :row => 4, :columnspan => 3, :sticky => 'ew')
+      
     end
     
     def display
-      @window.show_all
     end
     
     def close
-      @window.destroy
-      Gtk.main_quit
     end
   
     def property_change(event)
       if event.property_name == "last_key_pressed"
-        @entry.text = @entry.text+event.new_value
+        @entry_variable.set_value(@entry_variable.value+event.new_value)
         
       elsif event.property_name == 'result'
+        
         @label_result.text = event.new_value.to_s 
         
       elsif event.property_name == 'raz'
-        @entry.text = ''
+        @entry_variable.set_value('')
       end
     end
   
@@ -220,11 +244,6 @@ module Compilator
   
 end
 
-Gtk.init
-Thread.new do
-  Gtk.main
-end
-
 Compilator::Compilator.new.display_views
 
-Thread.list.each {|t| t.join if t!=Thread.main}
+Tk.mainloop
