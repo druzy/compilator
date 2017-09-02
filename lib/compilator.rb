@@ -69,7 +69,7 @@ module Compilator
     
     def initialize
       super()
-      @score = {'r' => 0, 'o' => 1, 'j' => 2, 'c' => 3, 'v' => 4, 'e' => 5}
+      @score = {'r' => 0, 'o' => 1, 'j' => 2.5, 'c' => 4, 'v' => 5}
       @last_key_pressed = nil
       @result = nil
       @raz = false
@@ -192,10 +192,6 @@ module Compilator
       
       Tk::Tile::Style.configure('Green.TButton', {"foreground" => 'green', 'font' => @font_button})
       @button_v['style'] = 'Green.TButton'
-      
-      @button_e['underline'] = 0
-      Tk::Tile::Style.configure('Underline.TButton', {"foreground" => 'green', 'font' => @font_button})
-      @button_e['style'] = 'Underline.TButton'
       
       @button_raz = Tk::Tile::Button.new(@window_calc)
       @button_raz['text'] = 'RàZ'
@@ -344,7 +340,6 @@ module Compilator
       @button_j.grid(:column => 2, :row => 1, :sticky => 'ewns')
       @button_c.grid(:column => 0, :row => 2, :sticky => 'ewns')
       @button_v.grid(:column => 1, :row => 2, :sticky => 'ewns')
-      @button_e.grid(:column => 2, :row => 2, :sticky => 'ewns')
       @button_raz.grid(:column => 0, :row => 3, :sticky => 'ewns')
       @button_equal.grid(:column => 1, :row => 3, :columnspan => 2, :sticky => 'ewns')
       
