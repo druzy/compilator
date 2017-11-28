@@ -44,8 +44,8 @@ module Compilator
         
       elsif kwargs[:location] == @model.total
         if action == :button_calcul_pressed
-          num = kwargs['a'].to_i+kwargs['c'].to_i+kwargs['e'].to_i+kwargs['g'].to_i+kwargs['i'].to_i
-          denom = kwargs['b'].to_i+kwargs['d'].to_i+kwargs['f'].to_i+kwargs['h'].to_i+kwargs['j'].to_i
+          num = kwargs['a'].to_f+kwargs['c'].to_f+kwargs['e'].to_f+kwargs['g'].to_f+kwargs['i'].to_f
+          denom = kwargs['b'].to_f+kwargs['d'].to_f+kwargs['f'].to_f+kwargs['h'].to_f+kwargs['j'].to_f
           @model.result_total = num.to_s+"/"+denom.to_s
           @model.result_arrondi = (num*20.to_f/denom).round(2).to_s+'/20'
         
@@ -246,6 +246,8 @@ module Compilator
           entry.validate = 'key'
           entry.validatecommand do |valid|
             if (0..9).map{|el| el.to_s}.include?(valid.string)
+              true
+            elsif valid.string=='.'
               true
             else
               false
